@@ -3,7 +3,7 @@ const cors = require("cors");
 
 require("dotenv").config();
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 const { MongoClient, ServerApiVersion } = require("mongodb");
 // middleware
 app.use(cors());
@@ -27,6 +27,8 @@ async function run() {
 
     const db = client.db("toyHouse");
     const toysCollection = db.collection("category");
+    const data = client.db("toyHouse");
+    const tabsCollection = data.collection("Tabs");
 
     app.get("/services", async (req, res) => {
       const cursor = serviceCollection.find();
@@ -55,6 +57,22 @@ async function run() {
       const result = await toysCollection
         .find({})
         .sort({ createdAt: -1 })
+        .toArray();
+      res.send(result);
+    });
+    
+    app.get("/tabtoys/:text", async (req, res) => {
+      //console.log(req.params.text);
+      if (req.params.text == "wooden" || req.params.text== "softtoy" || req.params.text == "plush") {
+        const result = await tabsCollection
+        .find({
+          category: req.params.text})
+        .toArray();
+        //console.log(result);
+      return res.send(result);
+      }
+      const result = await tabsCollection
+        .find({})
         .toArray();
       res.send(result);
     });
