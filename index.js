@@ -27,18 +27,14 @@ async function run() {
 
     const db = client.db("toyHouse");
     const toysCollection = db.collection("category");
+
     const data = client.db("toyHouse");
     const tabsCollection = data.collection("Tabs");
 
-    app.get("/services", async (req, res) => {
-      const cursor = serviceCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
 
-    app.post("/posttoy", async (req, res) => {
+    app.post("/postToy", async (req, res) => {
       const body = req.body;
-      // body.createdAt = new Date();
+      body.createdAt = new Date();
       console.log(body);
       const result = await toysCollection.insertOne(body);
       console.log(result);
@@ -53,6 +49,25 @@ async function run() {
       // }
     });
 
+    app.get("/alltoys", async (req, res) => {
+      const result = await toysCollection
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/mytoys/:email", async (req, res) => {
+      //console.log(req.params.id);
+      const result = await toysCollection
+        .find({
+          email: req.params.email,
+        })
+        .toArray();
+      res.send(result);
+    });
+
+
     app.get("/mytoys", async (req, res) => {
       const result = await toysCollection
         .find({})
@@ -60,7 +75,7 @@ async function run() {
         .toArray();
       res.send(result);
     });
-    
+
     app.get("/tabtoys/:text", async (req, res) => {
       //console.log(req.params.text);
       if (req.params.text == "wooden" || req.params.text== "softtoy" || req.params.text == "plush") {
