@@ -53,7 +53,7 @@ async function run() {
       // }
     });
 
-    app.get("/alltoys", async (req, res) => {
+    app.get("/mytoys", async (req, res) => {
       const result = await toysCollection
         .find({})
         .sort({ createdAt: -1 })
