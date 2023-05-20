@@ -1,10 +1,10 @@
 const express = require("express");
 const cors = require("cors");
-
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
-const port = process.env.PORT || 4000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const port = process.env.PORT || 5000;
+
 // middleware
 app.use(cors());
 app.use(express.json());
@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const db = client.db("toyHouse");
     const toysCollection = db.collection("category");
@@ -31,6 +31,21 @@ async function run() {
     const data = client.db("toyHouse");
     const tabsCollection = data.collection("Tabs");
 
+    const indexKeys = { toyName: 1 }; // Replace field1 and field2 with your actual field names
+    const indexOptions = { name: "Toyname" }; // Replace index_name with the desired index name
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    console.log(result);
+
+    //search by toy name
+    app.get("/getToys/:text", async (req, res) => {
+      const searchText = req.params.text;
+      const result = await toysCollection
+        .find({
+          $or: [{ toyName: { $regex: searchText, $options: "i" } }],
+        })
+        .toArray();
+      res.send(result);
+    });
 
     app.post("/postToy", async (req, res) => {
       const body = req.body;
@@ -39,14 +54,6 @@ async function run() {
       const result = await toysCollection.insertOne(body);
       console.log(result);
       res.send(result);
-      // if (result?.insertedId) {
-      //   return res.status(200).send(result);
-      // } else {
-      //   return res.status(404).send({
-      //     message: "can not insert try again leter",
-      //     status: false,
-      //   });
-      // }
     });
 
     app.get("/alltoys", async (req, res) => {
@@ -67,6 +74,40 @@ async function run() {
       res.send(result);
     });
 
+    //delete my toy
+
+    app.delete("/mytoys/:id", async (req, res) => {
+      //console.log(req.params.id);
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //update my toy
+    app.patch('/mytoys/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedToy = req.body;
+      console.log(updatedToy);
+      const updateDoc = {
+          $set: {
+              price: updatedToy.price,
+              quantity:updatedToy.quantity,
+              Image:updatedToy.image,
+              detail:updatedToy.detail,
+          },
+      };
+      const result = await toysCollection.updateOne(filter, updateDoc);
+      res.send(result);
+  })
+
+    // app.delete("/alltoys/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await toysCollection.deleteOne(query);
+    //   res.send(result);
+    // });
 
     app.get("/mytoys", async (req, res) => {
       const result = await toysCollection
@@ -78,17 +119,20 @@ async function run() {
 
     app.get("/tabtoys/:text", async (req, res) => {
       //console.log(req.params.text);
-      if (req.params.text == "wooden" || req.params.text== "softtoy" || req.params.text == "plush") {
+      if (
+        req.params.text == "wooden" ||
+        req.params.text == "softtoy" ||
+        req.params.text == "plush"
+      ) {
         const result = await tabsCollection
-        .find({
-          category: req.params.text})
-        .toArray();
+          .find({
+            category: req.params.text,
+          })
+          .toArray();
         //console.log(result);
-      return res.send(result);
+        return res.send(result);
       }
-      const result = await tabsCollection
-        .find({})
-        .toArray();
+      const result = await tabsCollection.find({}).toArray();
       res.send(result);
     });
 
