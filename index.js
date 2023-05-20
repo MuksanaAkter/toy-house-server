@@ -85,30 +85,30 @@ async function run() {
     });
 
     //update my toy
-    app.patch('/mytoys/:id', async (req, res) => {
+    app.get('/mytoy/:id', async(req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedToy = req.body;
-      console.log(updatedToy);
-      const updateDoc = {
-          $set: {
-              price: updatedToy.price,
-              quantity:updatedToy.quantity,
-              Image:updatedToy.image,
-              detail:updatedToy.detail,
-          },
-      };
-      const result = await toysCollection.updateOne(filter, updateDoc);
-      res.send(result);
+      const query = {_id: new ObjectId(id)}
+      const toy = await toysCollection.findOne(query);
+      res.send(toy);
   })
 
-    // app.delete("/alltoys/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-    //   const result = await toysCollection.deleteOne(query);
-    //   res.send(result);
-    // });
-
+app.put("/mytoy/:id", async (req, res) => {
+  const id = req.params.id;
+  const body = req.body;
+  console.log(body);
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      toyName: body.toyName,
+      price: body.price,
+      quantity: body.quantity,
+    },
+  };
+  const result = await toysCollection.updateOne(filter, updateDoc);
+  res.send(result);
+});
+  
+  //get my added toys
     app.get("/mytoys", async (req, res) => {
       const result = await toysCollection
         .find({})
@@ -121,7 +121,7 @@ async function run() {
       //console.log(req.params.text);
       if (
         req.params.text == "wooden" ||
-        req.params.text == "softtoy" ||
+        req.params.text == "plastic" ||
         req.params.text == "plush"
       ) {
         const result = await tabsCollection
