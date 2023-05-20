@@ -23,13 +23,13 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    client.connect();
 
     const db = client.db("toyHouse");
     const toysCollection = db.collection("category");
 
     const data = client.db("toyHouse");
-    const tabsCollection = data.collection("Tabs");
+    // const tabsCollection = data.collection("Tabs");
 
     const indexKeys = { toyName: 1 }; // Replace field1 and field2 with your actual field names
     const indexOptions = { name: "Toyname" }; // Replace index_name with the desired index name
@@ -97,6 +97,7 @@ app.put("/mytoy/:id", async (req, res) => {
   const body = req.body;
   console.log(body);
   const filter = { _id: new ObjectId(id) };
+  const options ={upsert: true}
   const updateDoc = {
     $set: {
       toyName: body.toyName,
@@ -104,9 +105,16 @@ app.put("/mytoy/:id", async (req, res) => {
       quantity: body.quantity,
     },
   };
-  const result = await toysCollection.updateOne(filter, updateDoc);
+  const result = await toysCollection.updateOne(filter, updateDoc, options);
   res.send(result);
 });
+//view details
+app.get('/alltoys/:id', async(req, res) => {
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)}
+  const toys = await toysCollection.findOne(query);
+  res.send(toys);
+})
   
   //get my added toys
     app.get("/mytoys", async (req, res) => {
@@ -124,7 +132,7 @@ app.put("/mytoy/:id", async (req, res) => {
         req.params.text == "plastic" ||
         req.params.text == "plush"
       ) {
-        const result = await tabsCollection
+        const result = await toysCollection
           .find({
             category: req.params.text,
           })
@@ -132,7 +140,7 @@ app.put("/mytoy/:id", async (req, res) => {
         //console.log(result);
         return res.send(result);
       }
-      const result = await tabsCollection.find({}).toArray();
+      const result = await toysCollection.find({}).toArray();
       res.send(result);
     });
 
@@ -146,6 +154,7 @@ app.put("/mytoy/:id", async (req, res) => {
     // await client.close();
   }
 }
+
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
