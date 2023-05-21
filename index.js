@@ -58,7 +58,7 @@ async function run() {
 
     app.get("/alltoys", async (req, res) => {
       const result = await toysCollection
-        .find({})
+        .find({}).limit(20)
         .sort({ createdAt: -1 })
         .toArray();
       res.send(result);
@@ -135,7 +135,7 @@ app.get('/alltoys/:id', async(req, res) => {
         const result = await toysCollection
           .find({
             category: req.params.text,
-          })
+          }).limit(20)
           .toArray();
         //console.log(result);
         return res.send(result);
