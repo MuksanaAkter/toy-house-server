@@ -26,13 +26,11 @@ async function run() {
 
     const db = client.db("toyHouse");
     const toysCollection = db.collection("category");
-
-    const data = client.db("toyHouse");
     // const tabsCollection = data.collection("Tabs");
 
-    const indexKeys = { toyName: 1 }; // Replace field1 and field2 with your actual field names
-    const indexOptions = { name: "Toyname" }; // Replace index_name with the desired index name
-    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    //const indexKeys = { toyName: 1 }; // Replace field1 and field2 with your actual field names
+    //const indexOptions = { name: "Toyname" }; // Replace index_name with the desired index name
+    //const result = await toysCollection.createIndex(indexKeys, indexOptions);
     //console.log(result);
 
     //getting all toy data
@@ -45,14 +43,6 @@ async function run() {
       res.send(result);
     });
 
-    // //get my added toys
-    // app.get("/mytoys", async (req, res) => {
-    //   const result = await toysCollection
-    //     .find({})
-    //     // .sort({ createdAt: -1 })
-    //     .toArray();
-    //   res.send(result);
-    // });
 
     app.get("/tabtoys/:text", async (req, res) => {
       //console.log(req.params.text);
@@ -100,7 +90,8 @@ async function run() {
         .find({
           email: req.params.email,
         })
-        // .sort({})
+        // .sort({ price: 1 })
+        // .collation({ local: "en_US", numericOrdering: true})
         .toArray();
       res.send(result);
     });
@@ -142,6 +133,7 @@ async function run() {
           toyName: body.toyName,
           price: body.price,
           quantity: body.quantity,
+          detail: body.detail
         },
       };
       const result = await toysCollection.updateOne(filter, updateDoc, options);
